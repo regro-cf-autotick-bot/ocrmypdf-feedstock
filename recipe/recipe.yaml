@@ -28,27 +28,32 @@ requirements:
     - pip
   run:
     - python >=${{ python_min }},<4
-    - deprecation >=2.1.0
-    - fpdf2 >=2.8.0
-    - img2pdf >=0.5
+    - fpdf2 >=2.9.0
+    - img2pdf >=0.6
     - packaging >=20
     - pdfminer-six >=20260107
-    - pillow-heif
-    - pngquant
-    - pikepdf >=10
-    - pypdfium2 >=5.0.0
-    - pillow >=10.0.1
-    - pydantic >=2.12.5
+    # conda-forge pikepdf ships the [pdfa] extra dependencies
+    - pikepdf >=10.18
+    - pillow >=13
     - pluggy >=1
+    - pydantic >=2.14
+    - pypdfium2 >=5.15.0
     - rich >=13
-    - tesseract
+    - typing_extensions >=4.12
     - uharfbuzz >=0.53.2
+    # external programs
+    - pngquant
+    - tesseract
+  run_constraints:
+    # optional [heic] extra; opt-in upstream because wheels bundle GPLv2 x265
+    - pillow-heif >=1.7.0
 
 tests:
   - python:
       imports:
         - ocrmypdf
         - ocrmypdf._exec
+      # conda-forge pdfminer-six reports version 0.0.0 in its dist metadata
       pip_check: false
       python_version:
         - ${{ python_min }}.*
@@ -60,17 +65,20 @@ tests:
     script:
       - ocrmypdf --help
       - ocrmypdf --version
-      - ocrmypdf --mode force --output-type pdf tests/resources/linn.pdf /tmp/ocr_output.pdf
-      - test -s /tmp/ocr_output.pdf
-      - ocrmypdf --mode skip --optimize 3 --output-type pdf tests/resources/graph_ocred.pdf /tmp/opt_output.pdf
-      - test -s /tmp/opt_output.pdf
+      - ocrmypdf --mode force --output-type pdf tests/resources/linn.pdf ocr_output.pdf
+      - test -s ocr_output.pdf
+      - ocrmypdf --mode force --output-type pdfa --pdfa-backend internal tests/resources/linn.pdf ocr_pdfa.pdf
+      - test -s ocr_pdfa.pdf
+      - ocrmypdf --mode skip --optimize 3 --output-type pdf tests/resources/graph_ocred.pdf opt_output.pdf
+      - test -s opt_output.pdf
 
 about:
   summary: OCRmyPDF adds an OCR text layer to scanned PDF files, allowing them to be searched
   license: MPL-2.0
   license_file: LICENSE
+  homepage: https://github.com/ocrmypdf/OCRmyPDF
   repository: https://github.com/ocrmypdf/OCRmyPDF
-  homepage: https://github.com/jbarlow83/OCRmyPDF
+  documentation: https://ocrmypdf.readthedocs.io/
 
 extra:
   recipe-maintainers:
